@@ -41,7 +41,7 @@ def get_publications(query, size):
                             if doc.abstract is not None else ""
                         pub["year"] = doc.year
                         pub["keywords"] = doc.keywords \
-                            if doc.keywords is not None else ""
+                            if doc.keywords is not None else list()
                         publications_list.append(pub)
                         current_papers += 1
 

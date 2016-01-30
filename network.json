@@ -1,0 +1,68 @@
+[
+  {
+    "authors": [
+      1,
+      2,
+      3
+    ],
+    "keywords": [
+      "Drug",
+      "Animal"
+    ]
+  },
+  {
+    "authors": [
+      2,
+      3,
+      4
+    ],
+    "keywords": [
+      "Drug",
+      "Dog"
+    ]
+  },
+  {
+    "authors": [
+      1,
+      5
+    ],
+    "keywords": [
+      "Drug",
+      "Discovery"
+    ]
+  },
+  {
+    "authors": [
+      1,
+      5
+    ],
+    "keywords": [
+      "Drug",
+      "Medicine",
+      "Studies"
+    ]
+  },
+  {
+    "authors": [
+      5,
+      6,
+      7
+    ],
+    "keywords": [
+      "Statistics",
+      "Machine learning",
+      "Biochemistry"
+    ]
+  },
+  {
+    "authors": [
+      5,
+      6,
+      8
+    ],
+    "keywords": [
+      "Statistics",
+      "Biochemistry"
+    ]
+  }
+]
