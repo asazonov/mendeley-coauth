@@ -7,6 +7,7 @@ from Bio import Entrez
 import os
 import json
 import sys
+import urllib.request
 
 Entrez.email = 'ale@gmail.com'
     
@@ -28,53 +29,56 @@ def doi_to_pmid(doi):
         return None
 
 def process_mendeley_record(record):
-    doi = record['doi']
-    pmid = doi_to_pmid(doi)
-    if pmid != None:
-        pubmed_xml = fetch_xml(pmid)
+    try: 
+        doi = record['doi']
+        pmid = doi_to_pmid(doi)
+        if pmid != None:
+            pubmed_xml = fetch_xml(pmid)
 
-        # Process authors 
-        authors = []
-        if 'AuthorList' in pubmed_xml['MedlineCitation']['Article']:
-            for author in pubmed_xml['MedlineCitation']['Article']['AuthorList']:
-                if 'ForeName' in author:
-                    fullname = author['ForeName'] + " " + author['LastName']
-                elif 'LastName' in author:
-                    fullname = author['LastName']
-                else:
-                    return None
-                     
-                authors += [fullname]
-        else: 
+            # Process authors 
+            authors = []
+            if 'AuthorList' in pubmed_xml['MedlineCitation']['Article']:
+                for author in pubmed_xml['MedlineCitation']['Article']['AuthorList']:
+                    if 'ForeName' in author:
+                        fullname = author['ForeName'] + " " + author['LastName']
+                    elif 'LastName' in author:
+                        fullname = author['LastName']
+                    else:
+                        return None
+                         
+                    authors += [fullname]
+            else: 
+                return None
+            
+             # Process keywords
+            keywords = []
+
+            # Process keywords from Mendeley
+            keywords += [x.lower() for x in record['keywords']]
+
+            # Process keyboards from mesh
+            if 'MeshHeadingList' in list(pubmed_xml['MedlineCitation']):
+                mesh_headings = list(pubmed_xml['MedlineCitation']['MeshHeadingList'])
+                for mesh_heading in mesh_headings:
+                    if mesh_heading['DescriptorName'].attributes['MajorTopicYN'] == 'Y':
+                        keywords += [str(mesh_heading['DescriptorName']).lower()]
+                    qualifier = mesh_heading['QualifierName']
+                    if len(qualifier) > 0 and qualifier[0].attributes['MajorTopicYN'] == 'Y':
+                        keywords += [str(qualifier[0]).lower()]
+
+            # Process keywords from Pubmed
+            if 'KeywordList' in pubmed_xml['MedlineCitation'] and len(pubmed_xml['MedlineCitation']['KeywordList']) > 0:
+                for keyword in pubmed_xml['MedlineCitation']['KeywordList'][0]:
+                    keywords += [keyword.lower()]
+            
+            keywords = list(set(keywords))
+            
+            return {'authors':authors, 'keywords':keywords}
+        else:
             return None
-        
-         # Process keywords
-        keywords = []
-
-        # Process keywords from Mendeley
-        keywords += [x.lower() for x in record['keywords']]
-
-        # Process keyboards from mesh
-        if 'MeshHeadingList' in list(pubmed_xml['MedlineCitation']):
-            mesh_headings = list(pubmed_xml['MedlineCitation']['MeshHeadingList'])
-            for mesh_heading in mesh_headings:
-                if mesh_heading['DescriptorName'].attributes['MajorTopicYN'] == 'Y':
-                    keywords += [str(mesh_heading['DescriptorName']).lower()]
-                qualifier = mesh_heading['QualifierName']
-                if len(qualifier) > 0 and qualifier[0].attributes['MajorTopicYN'] == 'Y':
-                    keywords += [str(qualifier[0]).lower()]
-
-        # Process keywords from Pubmed
-        if 'KeywordList' in pubmed_xml['MedlineCitation'] and len(pubmed_xml['MedlineCitation']['KeywordList']) > 0:
-            for keyword in pubmed_xml['MedlineCitation']['KeywordList'][0]:
-                keywords += [keyword.lower()]
-        
-        keywords = list(set(keywords))
-        
-        return {'authors':authors, 'keywords':keywords}
-    else:
+    except urllib.error.HTTPError as err:
+        print(err.code)
         return None
-
 
 # In[6]:
 
@@ -88,7 +92,7 @@ def main():
         record_output = process_mendeley_record(record)
         if record_output is not None:
             output_file.write(str(record_output) + '\n')
-            if i % 100 == 0:
+            if i % 30 == 0:
                 output_file.flush()
                 print(i)
     output_file.close()
