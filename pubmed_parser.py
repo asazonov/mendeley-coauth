@@ -37,7 +37,7 @@ def process_mendeley_record(record):
 
             # Process authors 
             authors = []
-            if 'AuthorList' in pubmed_xml['MedlineCitation']['Article'] and 'MedlineCitation' in pubmed_xml:
+            if 'MedlineCitation' in pubmed_xml and 'AuthorList' in pubmed_xml['MedlineCitation']['Article']:
                 for author in pubmed_xml['MedlineCitation']['Article']['AuthorList']:
                     if 'ForeName' in author:
                         fullname = author['ForeName'] + " " + author['LastName']
