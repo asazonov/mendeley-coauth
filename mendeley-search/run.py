@@ -73,5 +73,5 @@ if __name__ == "__main__":
 
     publications = get_publications(args.query, args.size)
 
-    with open("{}.json".format(args.query.replace(" ", "")), 'w') as fp:
+    with open("{}.json".format(args.query.replace(" ", "")), "w+") as fp:
         json.dump(publications, fp, indent=4)
